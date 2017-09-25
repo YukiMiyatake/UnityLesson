@@ -105,7 +105,7 @@
 #include "Lighting.cginc"
 #include"AutoLight.cginc"
 
-		struct appdata
+	struct appdata
 	{
 		float4 vertex : POSITION;
 		float3 normal : NORMAL;
@@ -117,9 +117,8 @@
 		float4 vertex : SV_POSITION;
 		float2 uv	  : TEXCOORD1;
 
-		float3 lightCol : TEXCOORD3;
-		float3 diffuse : TEXCOORD4;
-		float3 specular : TEXCOORD5;
+		float3 diffuse : TEXCOORD2;
+		float3 specular : TEXCOORD3;
 	};
 
 	uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
@@ -144,7 +143,6 @@
 		float3 lightCol = _LightColor0.rgb * LIGHT_ATTENUATION(i);
 		float3 NdotL = dot(N, L);
 
-		o.lightCol = lightCol;
 		o.diffuse = (NdotL*0.5 + 0.5) * lightCol;
 		o.specular = pow(max(0.0, dot(H, N)), _Spec1Power) *  _Spec1Color.xyz * lightCol;  // Half vector
 
