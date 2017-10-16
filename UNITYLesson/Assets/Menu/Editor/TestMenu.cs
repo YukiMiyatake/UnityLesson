@@ -3,38 +3,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-public class TestMenu
+public class TestMenu : EditorWindow
 {
     [MenuItem("Test/Menu %a")]
     public static void ShowMenu()
     {
-        Debug.Log("ShowMenu");
+        TestMenu window = (TestMenu)EditorWindow.GetWindow(typeof(TestMenu));
+        window.Show();
     }
 
-
-    [MenuItem("Test/AddObject %b", true)]
-    static bool AddObjectValidate()
+    string myString = "Hello World";
+    bool groupEnabled;
+    bool myBool = true;
+    bool start = false;
+    float myFloat = 1.23f; void OnGUI()
     {
-        // GameObjectか？
-        return Selection.activeObject.GetType() == typeof(GameObject);
-    }
+        GUILayout.Label("Label", EditorStyles.boldLabel);
+        myString = EditorGUILayout.TextField("Text Field", myString);
 
-    [MenuItem("Test/AddObject %b", false)]
-    static void AddObject(MenuCommand command)
-    {
-        GameObject objMenuCommand = new GameObject("MenuCommand");
-        //　Undo登録
-        Undo.RegisterCreatedObjectUndo(objMenuCommand, "Test_AddObject " + objMenuCommand.name);
-        GameObjectUtility.SetParentAndAlign(objMenuCommand, command.context as GameObject);
+        groupEnabled = EditorGUILayout.BeginToggleGroup("Optional Settings", groupEnabled);
+        myBool = EditorGUILayout.Toggle("Toggle", myBool);
+        myFloat = EditorGUILayout.Slider("Slider", myFloat, -3, 3);
+        EditorGUILayout.EndToggleGroup();
 
 
-        GameObject obj = new GameObject("NewGame");
-        GameObjectUtility.SetParentAndAlign(obj, Selection.activeGameObject );
-
-        //　Undo登録
-        Undo.RegisterCreatedObjectUndo(obj, "Test_AddObject " + obj.name);
-        Undo.AddComponent<Rigidbody>(obj);
-
+        if (GUILayout.Button("Start"))
+        {
+            Debug.Log("Start Push");
+        }
     }
 
 }
