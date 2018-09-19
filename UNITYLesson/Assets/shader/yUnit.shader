@@ -25,6 +25,7 @@
 			#include "AutoLight.cginc"
             #pragma multi_compile_fwdbase
 
+ //          #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 			struct appdata
 			{
 				float4 vertex : POSITION;
@@ -79,7 +80,7 @@
 
 				// Diffuse(HalfLambert)
 				float3 NdotL = dot(N, L);
-				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol * SHADOW_ATTENUATION(i);
+				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol ;//* SHADOW_ATTENUATION(i);
 				// Speculer
 			//	float3 specular = pow(max(0.0, dot(reflect(-L, N), V)), _Spec1Power) * _Spec1Color.xyz;  // reflection
 				float3 specular = pow(max(0.0, dot(H, N)), _Spec1Power) * _Spec1Color.xyz * lightCol;  // Half vector
@@ -90,7 +91,7 @@
 			}
 			ENDCG
 		}
-
+        
         
 		Pass{
 			Tags{
@@ -115,7 +116,7 @@
 			};
 
 			struct v2f{
-				float4 vertex : SV_POSITION;
+				float4 pos : SV_POSITION;
 				float4 vertexW: TEXCOORD0;
 				float2 uv	  : TEXCOORD1;
 				float3 normal : TEXCOORD2;
@@ -128,7 +129,7 @@
 
 			v2f vert(appdata v){
 				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				o.vertexW = mul(unity_ObjectToWorld, v.vertex);
 
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
@@ -184,28 +185,32 @@
 
 
             #include "UnityCG.cginc"
-//            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
-  //          #pragma shader_feature _METALLICGLOSSMAP
-    //        #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-      //      #pragma skip_variants SHADOWS_SOFT
             #pragma multi_compile_shadowcaster
 
-
-
-            struct VertexInput {
-                 float4 vertex : POSITION;
+            /*
+            struct appdata_base {
+                float4 vertex : POSITION;
+                float3 normal : NORMAL;
+                float4 texcoord : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
-            struct VertexOutput {
-                float4 pos : SV_POSITION ;
-            };
 
-            VertexOutput vertShadowCaster (VertexInput v) {
-                VertexOutput o = (VertexOutput)0;
-                o.pos = UnityObjectToClipPos( v.vertex );
+             struct v2f {
+                float4 pos : SV_POSITION;
+            };
+            */
+
+             struct v2f {
+                V2F_SHADOW_CASTER;
+            };
+    
+            v2f vertShadowCaster (appdata_base v) {
+                v2f o = (v2f)0;
+                TRANSFER_SHADOW_CASTER_NORMALOFFSET(o)
                 return o;
             }
 
-            float4 fragShadowCaster(VertexOutput i) : SV_TARGET {
+            float4 fragShadowCaster(v2f i) : SV_TARGET {
                 SHADOW_CASTER_FRAGMENT(i)
             }
 
