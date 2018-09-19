@@ -6,11 +6,10 @@
 		_Spec1Power("Specular Power", Range(0, 30)) = 1
 		_Spec1Color("Specular Color", Color) = (0.5,0.5,0.5,1)
 	}
-	SubShader
-	{
-		Tags { "RenderType" = "Opaque" }
+	SubShader{
 
-		Pass{
+    	Tags { "RenderType" = "Opaque" }
+    	Pass{
 			Tags{
 				"LightMode" = "ForwardBase"
 			}
@@ -24,20 +23,22 @@
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
+            #pragma multi_compile_fwdbase
 
 			struct appdata
 			{
 				float4 vertex : POSITION;
 				float3 normal : NORMAL;
-				float2 uv	  : TEXCOORD0;
+				float2 texcoord	  : TEXCOORD0;
 			};
 
 			struct v2f
 			{
-				float4 vertex : SV_POSITION;
+				float4 pos : SV_POSITION;
 				float4 vertexW: TEXCOORD0;
 				float2 uv	  : TEXCOORD1;
-				float3 normal : TEXCOORD2;
+				float3 normalWorld : TEXCOORD2;
+                SHADOW_COORDS(3)
 			};
 
 			uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
@@ -45,22 +46,25 @@
 			uniform float4 _Spec1Color;
 
 
-			v2f vert(appdata v)
-			{
+			v2f vert(appdata_full v){
 				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				o.vertexW = mul(unity_ObjectToWorld, v.vertex);
 
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.normal = UnityObjectToWorldNormal(v.normal);
+                o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
+                o.normalWorld = UnityObjectToWorldNormal(v.normal);
+
+                half3 eyeVec = normalize(o.vertexW.xyz - _WorldSpaceCameraPos);
+
+                TRANSFER_SHADOW(o);
+
 				return o;
 			}
 
-			float4 frag(v2f i) : SV_Target
-			{
+			float4 frag(v2f i) : SV_Target{
 				float3 L = normalize(_WorldSpaceLightPos0.xyz);
 				float3 V = normalize(_WorldSpaceCameraPos - i.vertexW.xyz);
-				float3 N = i.normal;
+				float3 N = i.normalWorld;
 				float3 H = normalize(L + V);
 
 
@@ -75,21 +79,22 @@
 
 				// Diffuse(HalfLambert)
 				float3 NdotL = dot(N, L);
-				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol;
-
+				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol * SHADOW_ATTENUATION(i);
 				// Speculer
 			//	float3 specular = pow(max(0.0, dot(reflect(-L, N), V)), _Spec1Power) * _Spec1Color.xyz;  // reflection
 				float3 specular = pow(max(0.0, dot(H, N)), _Spec1Power) * _Spec1Color.xyz * lightCol;  // Half vector
 
-
-				return float4( (ambient + diffuse) * tex + specular, 1.0);
+//                    return SHADOW_ATTENUATION(i);
+			//	return float4( (diffuse) * tex + specular, 1.0);
+                return float4( (ambient + diffuse) * tex + specular, 1.0);
 			}
 			ENDCG
 		}
 
+        
 		Pass{
 			Tags{
-    			"LightMode" = "ForwardAdd"
+				"LightMode" = "ForwardAdd"
 			}
 
 			Cull Back
@@ -103,15 +108,13 @@
 			#include "Lighting.cginc"
 			#include"AutoLight.cginc"
 
-			struct appdata
-			{
+			struct appdata{
 				float4 vertex : POSITION;
 				float3 normal : NORMAL;
 				float2 uv	  : TEXCOORD0;
 			};
 
-			struct v2f
-			{
+			struct v2f{
 				float4 vertex : SV_POSITION;
 				float4 vertexW: TEXCOORD0;
 				float2 uv	  : TEXCOORD1;
@@ -123,8 +126,7 @@
 			uniform float4 _Spec1Color;
 
 
-			v2f vert(appdata v)
-			{
+			v2f vert(appdata v){
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.vertexW = mul(unity_ObjectToWorld, v.vertex);
@@ -134,8 +136,7 @@
 				return o;
 			}
 
-			float4 frag(v2f i) : SV_Target
-			{
+			float4 frag(v2f i) : SV_Target{
 				float3 L = normalize(_WorldSpaceLightPos0.xyz);
 				float3 V = normalize(_WorldSpaceCameraPos - i.vertexW.xyz);
 				float3 N = i.normal;
@@ -159,7 +160,7 @@
 
 				return float4( diffuse * tex + specular, 1.0 );
 			}
-				ENDCG
+			ENDCG
 
         }
 
@@ -168,6 +169,9 @@
         Pass {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" }
+
+            Offset 1, 1
+            Cull Off
 
             ZWrite On ZTest LEqual
 
@@ -179,32 +183,38 @@
             #pragma fragment fragShadowCaster
 
 
+            #include "UnityCG.cginc"
+//            #pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
+  //          #pragma shader_feature _METALLICGLOSSMAP
+    //        #pragma shader_feature _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+      //      #pragma skip_variants SHADOWS_SOFT
+            #pragma multi_compile_shadowcaster
+
+
+
             struct VertexInput {
-                float4 vertex : POSITION;
+                 float4 vertex : POSITION;
             };
             struct VertexOutput {
                 float4 pos : SV_POSITION ;
             };
 
             VertexOutput vertShadowCaster (VertexInput v) {
-
                 VertexOutput o = (VertexOutput)0;
                 o.pos = UnityObjectToClipPos( v.vertex );
                 return o;
             }
 
             float4 fragShadowCaster(VertexOutput i) : SV_TARGET {
-                return 0;
+                SHADOW_CASTER_FRAGMENT(i)
             }
 
 
             ENDCG
 
-
-
         }
 
-	}
-
+    }
+    FallBack "Diffuse"
 
 }
