@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+        _ShadowStencilRef("Shadow Stencil Reference", Int) = 1
 		_Spec1Power("Specular Power", Range(0, 30)) = 1
 		_Spec1Color("Specular Color", Color) = (0.5,0.5,0.5,1)
 	}
@@ -26,21 +27,32 @@
             #pragma multi_compile_fwdbase
 
  //          #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
-			struct appdata
-			{
+			struct appdata{
 				float4 vertex : POSITION;
 				float3 normal : NORMAL;
 				float2 texcoord	  : TEXCOORD0;
 			};
 
-			struct v2f
-			{
+			struct v2f{
 				float4 pos : SV_POSITION;
 				float4 vertexW: TEXCOORD0;
 				float2 uv	  : TEXCOORD1;
 				float3 normalWorld : TEXCOORD2;
                 SHADOW_COORDS(3)
 			};
+            
+            #define RENDER_TARGET(n) fixed4 c##n : SV_Target##n;
+             
+            struct fout{
+                RENDER_TARGET(0)
+                RENDER_TARGET(1)
+                RENDER_TARGET(2)
+                RENDER_TARGET(3)
+                RENDER_TARGET(4)
+                RENDER_TARGET(5)
+                RENDER_TARGET(6)
+                RENDER_TARGET(7)
+            };
 
 			uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
 			uniform float _Spec1Power;
@@ -62,7 +74,8 @@
 				return o;
 			}
 
-			float4 frag(v2f i) : SV_Target{
+			fout frag(v2f i) : SV_Target{
+                fout o;
 				float3 L = normalize(_WorldSpaceLightPos0.xyz);
 				float3 V = normalize(_WorldSpaceCameraPos - i.vertexW.xyz);
 				float3 N = i.normalWorld;
@@ -70,7 +83,7 @@
 
 
 				//LightColor
-				float3 lightCol = _LightColor0.rgb * LIGHT_ATTENUATION(i);
+				float3 lightCol = _LightColor0.rgb;// * LIGHT_ATTENUATION(i);
 
 				//Ambient
 				float3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;
@@ -80,14 +93,15 @@
 
 				// Diffuse(HalfLambert)
 				float3 NdotL = dot(N, L);
-				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol ;//* SHADOW_ATTENUATION(i);
+				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol ;// * SHADOW_ATTENUATION(i);
 				// Speculer
 			//	float3 specular = pow(max(0.0, dot(reflect(-L, N), V)), _Spec1Power) * _Spec1Color.xyz;  // reflection
 				float3 specular = pow(max(0.0, dot(H, N)), _Spec1Power) * _Spec1Color.xyz * lightCol;  // Half vector
 
-//                    return SHADOW_ATTENUATION(i);
-			//	return float4( (diffuse) * tex + specular, 1.0);
-                return float4( (ambient + diffuse) * tex + specular, 1.0);
+                o.c0 = fixed4( (ambient + diffuse) * tex + specular, 1.0);
+                o.c1 = fixed4( LIGHT_ATTENUATION(i), 1, 1, 1 );
+
+                return o;
 			}
 			ENDCG
 		}
@@ -145,7 +159,7 @@
 
 
 				//LightColor
-				float3 lightCol = _LightColor0.rgb * LIGHT_ATTENUATION(i);
+				float3 lightCol = _LightColor0.rgb;// * LIGHT_ATTENUATION(i);
 
 				// texture albedo
 				float4 tex = tex2D(_MainTex, i.uv);
@@ -170,7 +184,13 @@
         Pass {
             Name "ShadowCaster"
             Tags { "LightMode" = "ShadowCaster" }
-
+/*
+            Stencil{
+                Ref [_ShadowStencilRef]
+                Comp Always
+                Pass Replace
+            }
+            */
             Offset 1, 1
             Cull Off
 
