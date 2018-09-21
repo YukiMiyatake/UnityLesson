@@ -101,6 +101,7 @@
                 o.c0 = fixed4( (ambient + diffuse) * tex + specular, 1.0);
                 o.c1 = fixed4( LIGHT_ATTENUATION(i), 1, 1, 1 );
                 o.c2 = o.c0;
+                o.c3 = o.c1;
 
                 return o;
 			}
