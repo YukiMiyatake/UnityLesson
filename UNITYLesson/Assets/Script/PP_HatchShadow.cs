@@ -41,6 +41,7 @@ public class PP_HatchShadow : MonoBehaviour {
   //      RenderTargetIdentifier tar = new RenderTargetIdentifier(camTarget);
         mat.SetTexture("_MainTex", buf[0]);
         mat.SetTexture("_RT1", buf[1]);
+        mat.SetTexture("_RT2", buf[2]);
 
 ///        customImgEff.name = "CunstomImageEffect";
 //        customImgEff.Blit(tar, tar, cmd);

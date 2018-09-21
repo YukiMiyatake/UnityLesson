@@ -15,8 +15,8 @@
     
 	SubShader
 	{
-		Cull Off ZWrite Off ZTest Off
-//        Cull Off ZWrite Off ZTest Always
+//		Cull Off ZWrite Off ZTest Off
+        Cull Off ZWrite Off ZTest Always
 
 		Pass
 		{
@@ -53,14 +53,15 @@
 			
 			sampler2D _MainTex;
             sampler2D _RT1;
+            sampler2D _RT2;
             
 
 			fixed4 frag (v2f i) : SV_Target
 			{
                 fixed4 shadow = tex2D( _RT1, i.uv);
-				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 col = tex2D(_RT2, i.uv);
 //                float l = LIGHT_ATTENUATION(i);
-				return float4( col.xyz * shadow.x, 1);
+				return float4( col.xyz , 1);
               //  return fixed4( col.xyz, 1);
 			}
 			ENDCG
