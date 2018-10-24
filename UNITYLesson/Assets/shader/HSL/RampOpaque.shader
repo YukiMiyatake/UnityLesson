@@ -10,7 +10,9 @@ Shader "HSL/RampOpaque"
 		_MainTex ("Texture", 2D) = "white" {}
 
 		_RampTex ("RampTexture", 2D) = "white" {}
-		_RampPower("RampPower", Range(0.0, 1.0)) = 0.5
+		_ToonPower("ToonPower", Range(0.0, 1.0)) = 0.5
+		_ToonColor("ToonColor", Color) = (0.0, 0.0, 0.0, 0.0)
+		_ToonThreshold("ToonThreshold", Range(0.0,1.0)) = 0.0
 
         _ShadowPower ("ShadowPower", Range(0.0, 1.0)) = 0.5
         _ShadowTex ("ShadowTexture", 2D) = "white" {}
@@ -69,7 +71,9 @@ Shader "HSL/RampOpaque"
             uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
 
             uniform sampler2D _RampTex; uniform float4 _RampTex_ST;
-			uniform float _RampPower;
+			uniform float _ToonPower;
+			uniform float4 _ToonColor;
+			uniform float _ToonThreshold;
 
 			uniform sampler2D _ShadowTex; uniform float4 _ShadowTex_ST;
             uniform float _ShadowPower;
@@ -113,21 +117,17 @@ Shader "HSL/RampOpaque"
 				float3 NdotL = dot(N, L);
 				float3 diffuse = (NdotL*0.5 + 0.5);
 				float4 ramp = tex2D(_RampTex, float2(diffuse.x, 0));
-//				float3 diffuse = (NdotL*0.5 + 0.5) * lightCol ;
+//				float4 ramp2 = lerp(float4(1.0, 1.0, 1.0, 1.0), float4(_ToonColor.xyz, 1.0), step( diffuse.x, _ToonThreshold ));
+				float4 ramp2 = (diffuse.x >= _ToonThreshold) ? float4(1.0, 1.0, 1.0, 1.0): float4(_ToonColor.xyz, 1.0);
+
 
 				// Speculer
 				float3 specular = pow(max(0.0, dot(H, N)), _Spec1Power) * _Spec1Color.xyz * lightCol;  // Half vector
                             
                 i.vpos.xy /= _ScreenParams.xy;
 
-	//			float3 shadowTex = lerp(tex2D(_ShadowTex, i.vpos.xy), 1.0, SHADOW_ATTENUATION(i)*diffuse);
-//				return float4(saturate((ambient)* tex * ramp * (shadowTex)+specular), 1.0);
-
 				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
-				return float4(saturate(ambient* (tex*(1 - _RampPower) + ramp*_RampPower ) * shadowTex + specular), 1.0);
-
-//				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
-//				return float4(saturate(lightCol* (tex*(1 - _RampPower) + ramp*_RampPower ) * shadowTex + specular), 1.0);
+				return float4(saturate(ambient* (tex*(1 - _ToonPower) + ramp*_ToonPower ) * shadowTex * ramp2 + specular), 1.0);
 			}
 			ENDCG
 		}
