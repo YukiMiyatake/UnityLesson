@@ -215,7 +215,6 @@ Shader "HSL/RampOpaque"
 			};
 
 
-			// アウトラインの頂点計算
 			v2f vert(appdata v)
 			{
 				v2f o;
@@ -232,10 +231,8 @@ Shader "HSL/RampOpaque"
 				return o;
 			}
 
-			// アウトライン面レンダリング
 			fixed4 frag(v2f i) : SV_Target
 			{
-				// 計算済みのアウトライン色を返す
 				return i.outlineColor;
 			}
 
