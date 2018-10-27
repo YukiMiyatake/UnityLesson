@@ -21,6 +21,8 @@ Shader "Hidden/HSL/Ramp" {
 			#include "Lighting.cginc"
 			#include "AutoLight.cginc"
 			#pragma multi_compile_fwdbase
+			#pragma multi_compile _BLENDMODE_NORMAL _BLENDMODE_MULTIPLY _BLENDMODE_LINEARDODGE _BLENDMODE_SCREEN
+
 
 		//          #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
 			struct appdata
@@ -97,8 +99,8 @@ Shader "Hidden/HSL/Ramp" {
 				// Diffuse(HalfLambert)
 				float3 NdotL = dot(N, L);
 				float3 diffuse = (NdotL*0.5 + 0.5);
-				float4 ramp = tex2D(_RampTex, float2(diffuse.x, 0));
-				float4 ramp2 = (diffuse.x >= _ToonThreshold) ? float4(1.0, 1.0, 1.0, 1.0) : float4(_ToonColor.xyz, 1.0);
+				float3 ramp = tex2D(_RampTex, float2(diffuse.x, 0));
+				float3 ramp2 = (diffuse.x >= _ToonThreshold) ? float3(1.0, 1.0, 1.0) : _ToonColor.xyz;
 
 
 				// Speculer
@@ -107,7 +109,21 @@ Shader "Hidden/HSL/Ramp" {
 				i.vpos.xy /= _ScreenParams.xy;
 
 				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
-				return float4(saturate(ambient* (tex*(1 - _ToonPower) + ramp * ramp2 * _ToonPower) * shadowTex + specular), 1.0);
+
+				float3  albedo;
+				float3 ramp3 = ramp * ramp2;
+#ifdef _BLENDMODE_NORMAL
+				albedo = tex*(1 - _ToonPower) + ramp3 * _ToonPower;
+#elif _BLENDMODE_MULTIPLY
+				albedo = lerp( tex, tex * ramp3, _ToonPower);
+#elif _BLENDMODE_LINEARDODGE
+				albedo = tex + ramp * ramp2 * _ToonPower;
+#elif _BLENDMODE_SCREEN
+				albedo = lerp(tex, tex + ramp3 - (tex*ramp3), _ToonPower);
+#else
+				albedo = tex*(1 - _ToonPower) + ramp3 * _ToonPower;
+#endif
+				return float4(saturate(ambient* albedo * shadowTex + specular), 1.0);
 			}
 			ENDCG
 
