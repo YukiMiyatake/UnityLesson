@@ -107,7 +107,7 @@ Shader "Hidden/HSL/Ramp" {
 				i.vpos.xy /= _ScreenParams.xy;
 
 				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
-				return float4(saturate(ambient* (tex*(1 - _ToonPower) + ramp*_ToonPower) * shadowTex * ramp2 + specular), 1.0);
+				return float4(saturate(ambient* (tex*(1 - _ToonPower) + ramp * ramp2 * _ToonPower) * shadowTex + specular), 1.0);
 			}
 			ENDCG
 
