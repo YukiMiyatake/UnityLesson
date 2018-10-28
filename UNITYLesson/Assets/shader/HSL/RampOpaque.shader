@@ -8,6 +8,9 @@ Shader "HSL/RampOpaque"
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+		[Toggle(_USE_NORMALMAP)] _Invert("UseNormalMap", Float) = 0
+		_NormalMap("NormalMap", 2D) = "bump" {}
+
 		[Header(Toon )]
 		[KeywordEnum(Normal, Multiply, LinearDodge,Screen)] _BlendMode("Blend Mode", Float) = 0
 		_RampTex ("RampTexture", 2D) = "white" {}
@@ -25,8 +28,10 @@ Shader "HSL/RampOpaque"
 		_Spec1Color("Specular Color", Color) = (0.5,0.5,0.5,1)
 
 		[Header(Outline)]
-		_OutlineWidth("Outline Width", Range(0.0002, 0.01)) = 0.001
+		[Toggle(_USE_VERTEX_OUTLINE)] _Invert("頂点カラーのAをアウトライン太さにする", Float) = 0
+		_OutlineWidth("Outline Width", Range(0.2, 10.0)) = 1
 		_OutlineColor("Outline Color", Color) = (0.0, 0.0, 0.0, 1.0)
+
 	}
 
 	SubShader{
