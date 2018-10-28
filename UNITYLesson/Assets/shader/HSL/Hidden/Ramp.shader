@@ -80,6 +80,8 @@ Shader "Hidden/HSL/Ramp" {
 #ifdef _USE_HATCHING
 			uniform sampler2D _ShadowTex; uniform float4 _ShadowTex_ST;
 			uniform float _ShadowTexPower;
+			uniform float _ShadowTexRepeatU;
+			uniform float _ShadowTexRepeatV;
 #endif 
 			uniform float _ShadowPower;
 
@@ -165,6 +167,7 @@ Shader "Hidden/HSL/Ramp" {
 				// Hatching
 #ifdef _USE_HATCHING
 				i.vpos.xy /= _ScreenParams.xy;
+				i.vpos.xy *= float2(_ShadowTexRepeatU, _ShadowTexRepeatV);
 				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
 #else
 				float3 shadowTex = 1;

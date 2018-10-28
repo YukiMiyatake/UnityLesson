@@ -23,7 +23,9 @@ Shader "HSL/RampOpaque"
 		[Toggle(_USE_HATCHING)] _useHatching("UseHatching", Float) = 0
 		_ShadowPower ("ShadowPower", Range(0.0, 1.0)) = 0.5
         _ShadowTex ("ShadowTexture", 2D) = "white" {}
-        _ShadowTexPower ("ShadowTexPower", Range(0.0, 1.0)) = 0.5
+		_ShadowTexRepeatU("ShadowTexture Repeat U", Range(1, 64)) = 1
+		_ShadowTexRepeatV("ShadowTexture Repeat V", Range(1, 64)) = 1
+		_ShadowTexPower ("ShadowTexPower", Range(0.0, 1.0)) = 0.5
 
 		[Header(Rim)]
 		[Toggle(_USE_RIM)] _useRim("UseRim", Float) = 0

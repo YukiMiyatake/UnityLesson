@@ -8,7 +8,7 @@ Material:
   m_PrefabInternal: {fileID: 0}
   m_Name: Naka_head_c
   m_Shader: {fileID: 4800000, guid: e50ce2d94441a374294364fb26b6a426, type: 3}
-  m_ShaderKeywords: UseNormalMap _BLENDMODE_NONE _USE_HATCHING _USE_OUTLINE _USE_RIM
+  m_ShaderKeywords: UseNormalMap _BLENDMODE_MULTIPLY _USE_HATCHING _USE_OUTLINE _USE_RIM
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -67,7 +67,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _BlendMode: 0
+    - _BlendMode: 2
     - _BumpScale: 1
     - _ClipThreshold: 0.962
     - _Cutoff: 0.5
@@ -86,9 +86,11 @@ Material:
     - _RampV: 0.5
     - _RimColorIntensity: 1
     - _RimPower: 3.7
-    - _ShadowPower: 0.355
+    - _ShadowPower: 0.519
     - _ShadowStencilRef: 1
-    - _ShadowTexPower: 0.789
+    - _ShadowTexPower: 1
+    - _ShadowTexRepeatU: 1
+    - _ShadowTexRepeatV: 1
     - _SmoothnessTextureChannel: 0
     - _Spec1Intensity: 0
     - _Spec1Power: 4.9
@@ -96,8 +98,9 @@ Material:
     - _SpecularHighlights: 1
     - _SpecularIntensity: 0.717
     - _SrcBlend: 1
+    - _ToonIntensity: 0.645
     - _ToonPower: 1
-    - _ToonThreshold: 0.638
+    - _ToonThreshold: 0
     - _UVSec: 0
     - _ZWrite: 1
     - _useClip: 0
