@@ -57,10 +57,10 @@ Shader "Hidden/HSL/Outline" {
 				o.pos = UnityObjectToClipPos(v.vertex);
 
 #ifdef _USE_VERTEX_OUTLINE
-				o.pos.xy += offset i.outline * _OutlineWidth* 0.001;
+				o.pos.xy += offset * i.outline.a * _OutlineWidth * 0.001;
 				o.outlineColor = _OutlineColor;
 #else
-				o.pos.xy += offset  * _OutlineWidth * 0.001;
+				o.pos.xy += offset * _OutlineWidth * 0.001;
 				o.outlineColor = _OutlineColor;
 #endif
 				return o;
