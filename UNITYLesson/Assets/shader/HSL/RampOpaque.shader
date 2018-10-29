@@ -7,6 +7,8 @@ Shader "HSL/RampOpaque"
 {
 	Properties
 	{
+	//	[Enum(Opaque, "Opaque" , Transparent, "")] _RenderMode ("Render Mode" , String) = "Opaque"
+
 		_MainTex ("Texture", 2D) = "white" {}
 		[Toggle(_USE_NORMALMAP)] _useNormalMap("UseNormalMap", Float) = 0
 		_NormalMap("NormalMap", 2D) = "bump" {}
@@ -48,16 +50,23 @@ Shader "HSL/RampOpaque"
 		[Header(Clip)]
 		[Toggle(_USE_CLIP)] _useClip("テクスチャのAでクリップ", Float) = 0
 		_ClipThreshold("ClipThreshold", Range(0.0,1.1)) = 0.05
+
+			[HideInInspector] _Mode("__mode", Float) = 0.0
+			[HideInInspector] _SrcBlend("__src", Float) = 1.0
+			[HideInInspector] _DstBlend("__dst", Float) = 0.0
+			[HideInInspector][Toggle] _ZWrite("__zw", Float) = 1.0 
 	}
 
 	SubShader{
-		Tags{ "Queue" = "Geometry" "RenderType" = "Opaque" }
+		Tags{ "Queue" = "Geometry"  }
 
 
 		UsePass "Hidden/HSL/Ramp/RAMP"
 		UsePass "Hidden/HSL/ShadowCaster/SHADOW_CASTER"
 		UsePass "Hidden/HSL/Outline/OUTLINE"
     }
+
+	CustomEditor "TestShaderGUI"
     FallBack "Diffuse"
 
 }

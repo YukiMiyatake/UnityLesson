@@ -11,6 +11,7 @@ Shader "Hidden/HSL/Ramp" {
 			Name "RAMP"
 			Tags{ "LightMode" = "ForwardBase" }
 			Cull Back
+			Blend[_SrcBlend][_DstBlend]
 
 			CGPROGRAM
 
@@ -29,7 +30,8 @@ Shader "Hidden/HSL/Ramp" {
 			#pragma multi_compile _ _USE_HATCHING
 			#pragma multi_compile _ _USE_RIM
 			#pragma multi_compile _ _USE_RAMP
-			#pragma multi_compile _ _USE_OUTLINE
+//#pragma multi_compile _ _USE_OUTLINE
+//#pragma multi_compile _ _USE_VERTEX_OUTLINE
 			#pragma multi_compile _ _USE_SPECULAR
 
 
