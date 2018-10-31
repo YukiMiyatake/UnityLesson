@@ -7,8 +7,8 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Naka_hair_c
-  m_Shader: {fileID: 4800000, guid: e50ce2d94441a374294364fb26b6a426, type: 3}
-  m_ShaderKeywords: _BLENDMODE_MULTIPLY _USE_HATCHING _USE_RIM _USE_SPECULAR
+  m_Shader: {fileID: 4800000, guid: 90835eff98b7b644ca8caddb7a6b92b5, type: 3}
+  m_ShaderKeywords: _BLENDMODE_MULTIPLY _USE_HATCHING _USE_RIM _USE_SPECULAR _ZWRITE_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -99,7 +99,7 @@ Material:
     - _SpecularHighlights: 1
     - _SpecularIntensity: 0.415
     - _SrcBlend: 1
-    - _ToonIntensity: 0.5
+    - _ToonIntensity: 0.434
     - _ToonPower: 0.5
     - _ToonThreshold: 0
     - _UVSec: 0
