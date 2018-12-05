@@ -5,6 +5,7 @@ Temp/
 Obj/
 UnityGenerated/
 Library/
+[Ll]ogs/
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
@@ -26,7 +27,7 @@ ExportedObj/
 # JetBrains    #
 # ============ #
 .idea
-Plugins/Editor/JetBrains/*
+#Assets/Plugins/Editor/JetBrains
 JetBrains
 
 
