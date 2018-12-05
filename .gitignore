@@ -23,6 +23,14 @@ ExportedObj/
 *.db
 
 # ============ #
+# JetBrains    #
+# ============ #
+.idea
+Plugins/Editor/JetBrains/*
+JetBrains
+
+
+# ============ #
 # OS generated #
 # ============ #
 .DS_Store
@@ -33,6 +41,7 @@ ExportedObj/
 Icon?
 ehthumbs.db
 Thumbs.db
+
 
 # ============ #
 # for others   #
