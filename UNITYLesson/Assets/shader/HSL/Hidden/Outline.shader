@@ -1,5 +1,5 @@
 ﻿/*
-HerritageShaderLibrary
+HeritageShaderLibrary
 Happy sugar life for you!
 */
 
