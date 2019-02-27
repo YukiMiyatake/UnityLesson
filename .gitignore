@@ -28,7 +28,7 @@ ExportedObj/
 # ============ #
 .idea
 #Assets/Plugins/Editor/JetBrains
-JetBrains
+Assets/Plugins/Editor/JetBrains/
 
 
 # ============ #
