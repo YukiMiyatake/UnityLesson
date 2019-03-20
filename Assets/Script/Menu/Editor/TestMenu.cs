@@ -15,7 +15,7 @@ public class TestMenu : EditorWindow
     string myString = "Hello World";
     bool groupEnabled;
     bool myBool = true;
-    bool start = false;
+  //  bool start = false;
     float myFloat = 1.23f; void OnGUI()
     {
         GUILayout.Label("Label", EditorStyles.boldLabel);
