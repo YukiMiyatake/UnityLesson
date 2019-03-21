@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
-namespace hoge
+namespace Openworld.Editor
 {
 
     public class SplitWorld : EditorWindow
@@ -18,119 +18,179 @@ namespace hoge
             Near,
         }
 
-        private static List<GameObject> terrainList = new List<GameObject>();
-        private readonly string  terrainPrefix = "WSTerrain_";
+        private static readonly int LAYER_LEN = Enum.GetNames(typeof(LayerType)).Length;
+
+        struct LayerParam
+        {
+            public string name;
+            public string prefix_in;
+            public string prefix_out;
+            public int xSize;
+            public int zSize;
+
+        }
+
+        //        private static List<GameObject> terrainList = new List<GameObject>();
+        //      private readonly string  terrainPrefix = "WSTerrain_";
+        //        private static List<LayerParam> layerParam = new List<LayerParam>();
+        private static LayerParam[] layerParam = new LayerParam[LAYER_LEN];
 
         // Must be power of two plus 1
-        static int newHeightRes = 65; // Started with 513 in New Terrain
-        static int newDetailRes = 256; // Started with 1024 in New Terrain
-        static int newSplatRes = 128; // Started with 512 in New Terrain
+        static int terrainHeightRes = 65;       // default: 513
+        static int terrainDetailRes = 256;      // default: 1024
+        static int terrainSplatRes = 128;       // default: 512
 
 
         [MenuItem("Split/Split Terrain")]
         public static void Init()
         {
+            for (int i = 0; i < LAYER_LEN; i++)
+            {
+                layerParam[i].xSize = 100;
+                layerParam[i].zSize = 100;
+            }
+
+            layerParam[(int) LayerType.Terrain].name = "Terrain";
+            layerParam[(int)LayerType.Terrain].prefix_in = "T_";
+            layerParam[(int)LayerType.Terrain].prefix_out = "OT_";
+
+            layerParam[(int)LayerType.Far].name = "FarObject";
+            layerParam[(int)LayerType.Far].prefix_in = "F_";
+            layerParam[(int)LayerType.Far].prefix_out = "OF_";
+
+            layerParam[(int)LayerType.Middle].name = "MiddleObject";
+            layerParam[(int)LayerType.Middle].prefix_in = "M_";
+            layerParam[(int)LayerType.Middle].prefix_out = "OM_";
+
+            layerParam[(int)LayerType.Near].name = "NearObject";
+            layerParam[(int)LayerType.Near].prefix_in = "N_";
+            layerParam[(int)LayerType.Near].prefix_out = "ON_";
+
             GetWindow<SplitWorld>();
 
-            foreach (GameObject go in UnityEngine.Object.FindObjectsOfType(typeof(GameObject)))
-            {
-                if (go.GetComponent<Terrain>())
-                {
-                    terrainList.Add(go);
-                }
-            }
         }
-
-        Transform transform;
-        int xSize = 100; 
-
-        int zSize = 100;
-
-
 
 
         public void OnGUI()
         {
-            //transform = (Transform)EditorGUILayout.ObjectField("Terrain to split", transform, typeof(Transform), true);
-            GUILayout.Label("Terrain");
 
-            xSize = EditorGUILayout.IntField("Split x Size", xSize);
-            zSize = EditorGUILayout.IntField("Split z Size", zSize);
-            newHeightRes = EditorGUILayout.IntField("New heightmap res", newHeightRes);
-            newDetailRes = EditorGUILayout.IntField("New detail res", newDetailRes);
-            newSplatRes = EditorGUILayout.IntField("New splat res", newSplatRes);
-
-            if (GUILayout.Button("Split!"))
+            for (int i = 0; i < LAYER_LEN; i++)
             {
-                if (terrainList.Count == 0)
+                var param = layerParam[i];
+
+                // Validate
+                if (param.xSize < 10) param.xSize = 10;
+                if (param.zSize < 10) param.zSize = 10;
+
+                // Terrainは特殊
+                if (i == (int) LayerType.Terrain)
                 {
-                    Debug.LogWarning("No terrain found");
-                    return;
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+                    EditorGUILayout.EndHorizontal();
+
+                    GUILayout.Label(param.name);
+
+                    GUILayout.Label("Input Prefix");
+                    param.prefix_in = EditorGUILayout.TextField(param.prefix_in);
+                    GUILayout.Label("Output Prefix");
+                    param.prefix_in = EditorGUILayout.TextField(param.prefix_out);
+
+                    param.xSize = EditorGUILayout.IntField("Split x Size", param.xSize);
+                    param.zSize = EditorGUILayout.IntField("Split z Size", param.zSize);
+
+                    terrainHeightRes = EditorGUILayout.IntField("New heightmap res", terrainHeightRes);
+                    terrainDetailRes = EditorGUILayout.IntField("New detail res", terrainDetailRes);
+                    terrainSplatRes = EditorGUILayout.IntField("New splat res", terrainSplatRes);
+                    if (GUILayout.Button("Split  " + param.name))
+                    {
+                        SplitTerrain(i);
+                        EditorUtility.ClearProgressBar();
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.Box("", GUILayout.ExpandWidth(true), GUILayout.Height(1));
+                    EditorGUILayout.EndHorizontal();
+
+                    GUILayout.Label(param.name);
+
+                    GUILayout.Label("Input Prefix");
+                    param.prefix_in = EditorGUILayout.TextField(param.prefix_in);
+                    GUILayout.Label("Output Prefix");
+                    param.prefix_in = EditorGUILayout.TextField(param.prefix_out);
+
+                    param.xSize = EditorGUILayout.IntField("Split x Size", param.xSize);
+                    param.zSize = EditorGUILayout.IntField("Split z Size", param.zSize);
+
+                    if (GUILayout.Button("Split  " + param.name))
+                    {
+                        SplitGameObject(i);
+                        EditorUtility.ClearProgressBar();
+                    }
+
                 }
 
-                foreach (var orig in terrainList)
+            }
+            
+        }
+
+
+
+        private void SplitTerrain(int layer)
+        {
+            var param = layerParam[layer];
+            foreach (GameObject go in UnityEngine.Object.FindObjectsOfType(typeof(GameObject)))
+            {
+                if (go.name.StartsWith(param.prefix_in, StringComparison.CurrentCultureIgnoreCase))
                 {
-
-
-                    if (xSize < 10)
-                        xSize = 10;
-                    if (zSize < 10)
-                        zSize = 10;
-
-                    var tera = orig.GetComponent<Terrain>();
-                    Debug.Log(tera.terrainData.size.z + " " + orig.transform.ToString()  );
-
-
-                    
-                    for (var x = 0; x < tera.terrainData.size.x; x+= xSize)
+                    var tera = go.GetComponent<Terrain>();
+                    if (tera)
                     {
-                        for (var z = 0; z < tera.terrainData.size.z; z+= zSize)
+                        for (var x = 0; x < tera.terrainData.size.x; x += param.xSize)
                         {
-                            copyTerrain(tera,
-                                string.Format("{0}{1}_{2}_0_{3}", terrainPrefix, tera.name, x, z), x, x+xSize,
-                                z,
-                                z+zSize, newHeightRes, newDetailRes, newSplatRes);
-
+                            for (var z = 0; z < tera.terrainData.size.z; z += param.zSize)
+                            {
+                                copyTerrain(tera,
+                                    string.Format("{0}{1}_{2}_0_{3}", param.prefix_out, go.name, x, z),
+                                    x, x + param.xSize,
+                                    z, z + param.zSize,
+                                    terrainHeightRes, terrainDetailRes, terrainSplatRes);
+                            }
                         }
                     }
-                    
-                    /*
-                    for (int x = 0; x < xLen; x++)
-                    {
-                        for (int z = 0; z < zLen; z++)
-                        {
-                            EditorUtility.DisplayProgressBar("Splitting Terrain",
-                                "Copying heightmap, detail, splat, and trees",
-                                (float) ((x * zLen) + z) / (xLen * zLen));
-                            float xMin = origTerrain.terrainData.size.x / xLen * x;
-                            float xMax = origTerrain.terrainData.size.x / xLen * (x + 1);
-                            float zMin = origTerrain.terrainData.size.z / zLen * z;
-                            float zMax = origTerrain.terrainData.size.z / zLen * (z + 1);
-                            copyTerrain(origTerrain,
-                                string.Format("{0}{1}{2}_0_{3}", terrainPrefix, origTerrain.name, x, z), xMin, xMax,
-                                zMin,
-                                zMax, newHeightRes, newDetailRes, newSplatRes);
-                        }
-                    }
-                    */
                 }
-
-                EditorUtility.ClearProgressBar();
-
-                // No longer needed
-                //for (int x = 0; x < xLen; x++)
-                //{
-                //    for (int z = 0; z < zLen; z++)
-                //    {
-                //        GameObject center = GameObject.Find(string.Format("{0}{1}_{2}", origTerrain.name, x, z));
-                //        GameObject left = GameObject.Find(string.Format("{0}{1}_{2}", origTerrain.name, x - 1, z));
-                //        GameObject top = GameObject.Find(string.Format("{0}{1}_{2}", origTerrain.name, x, z + 1));
-                //        stitchTerrain(center, left, top);
-                //    }
-                //}
             }
         }
 
+        private void SplitGameObject(int layer)
+        {
+            var param = layerParam[layer];
+            foreach (GameObject go in UnityEngine.Object.FindObjectsOfType(typeof(GameObject)))
+            {
+                if (go.name.StartsWith(param.prefix_in, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    foreach (Transform c in go.transform)
+                    {
+                        int x = (int)c.transform.position.x / param.xSize;
+                        int z = (int)c.transform.position.z / param.zSize;
+
+                        var goName = string.Format("{0}{1}_{2}_0_{3}", param.prefix_out, go.name, x, z);
+
+                        var goParent = GameObject.Find(goName);
+
+                        if (!goParent)
+                        {
+                            goParent = new GameObject(goName);
+                        }
+
+                        var tmp = Instantiate(c);
+                        tmp.parent = goParent.transform;
+                    }
+                }
+            }
+        }
         void copyTerrain(Terrain origTerrain, string newName, float xMin, float xMax, float zMin, float zMax,
             int heightmapResolution, int detailResolution, int alphamapResolution)
         {
@@ -173,12 +233,12 @@ namespace hoge
             TerrainData td = new TerrainData();
             GameObject gameObject = Terrain.CreateTerrainGameObject(td);
             Terrain newTerrain = gameObject.GetComponent<Terrain>();
-
+            /*
             if (!AssetDatabase.IsValidFolder("Assets/Resources"))
                 AssetDatabase.CreateFolder("Assets", "Resources");
             // Must do this before Splat
             AssetDatabase.CreateAsset(td, "Assets/Resources/" + newName + ".asset");
-
+            */
             // Copy over all vars
             newTerrain.bakeLightProbesForTrees = origTerrain.bakeLightProbesForTrees;
             newTerrain.basemapDistance = origTerrain.basemapDistance;
@@ -205,10 +265,11 @@ namespace hoge
             newTerrain.treeDistance = origTerrain.treeDistance;
             newTerrain.treeMaximumFullLODCount = origTerrain.treeMaximumFullLODCount;
 
- td.splatPrototypes = origTerrain.terrainData.splatPrototypes;
+//            td.splatPrototypes = origTerrain.terrainData.splatPrototypes;
             td.treePrototypes = origTerrain.terrainData.treePrototypes;
             td.detailPrototypes = origTerrain.terrainData.detailPrototypes;
 
+            td.terrainLayers = origTerrain.terrainData.terrainLayers;
             // Get percent of original
             float xMinNorm = xMin / origTerrain.terrainData.size.x;
             float xMaxNorm = xMax / origTerrain.terrainData.size.x;
