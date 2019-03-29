@@ -23,13 +23,15 @@ ExportedObj/
 *.booproj
 *.db
 
-# ============ #
-# JetBrains    #
-# ============ #
-.idea
-#Assets/Plugins/Editor/JetBrains
-Assets/Plugins/Editor/JetBrains/
 
+# TODO: for globalignore
+# Jetbrain Rider Cache
+.idea/
+Assets/Plugins/Editor/JetBrains*
+
+# TODO: for globalignore
+# Visual Studio Code
+.vscode/
 
 # ============ #
 # OS generated #
