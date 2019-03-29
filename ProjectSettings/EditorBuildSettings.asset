@@ -4,4 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scene/DrawCallTest/New Scene.unity
+    guid: e5f81ea2124474d0187ed66ecbe26db3
+  m_configObjects: {}
