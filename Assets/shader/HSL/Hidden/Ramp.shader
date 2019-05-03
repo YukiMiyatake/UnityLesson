@@ -137,21 +137,20 @@ Shader "Hidden/HSL/Ramp" {
 #if defined(_USE_NORMALMAP) || defined(_USE_MATCAP)
 				float isFrontFace = (facing >= 0 ? 1 : 0);
 				float faceSign = (facing >= 0 ? 1 : -1);
-				i.normalWorld *= faceSign;
 
-				float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalWorld);
+				float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalWorld * faceSign);
 				float3 _NormalMap_var = UnpackNormal(tex2D(_NormalMap, TRANSFORM_TEX(i.uv, _NormalMap)));
 				float3 normalLocal = _NormalMap_var.rgb;
-				float3 N = normalize(mul(normalLocal, tangentTransform));
+				float3 NN = normalize(mul(normalLocal, tangentTransform));
 #else
-				float3 N = i.normalWorld;
+				float3 NN = i.normalWorld;
 #endif
 
 
 
 
 #ifdef _USE_MATCAP
-				float2 node_3332 = (mul(UNITY_MATRIX_V, float4(N, 0)).rg*0.5 + 0.5);
+				float2 node_3332 = (mul(UNITY_MATRIX_V, float4(NN, 0)).rg*0.5 + 0.5);
 //				float4 _ShadowMaskTex_var = tex2D(_ShadowMaskTex, TRANSFORM_TEX(i.uv0, _ShadowMaskTex));
 				float4 _MatcapTex_var = tex2D(_MatcapTex, TRANSFORM_TEX(node_3332, _MatcapTex));
 #else
@@ -166,6 +165,7 @@ Shader "Hidden/HSL/Ramp" {
 				float3 L = normalize(_WorldSpaceLightPos0.xyz);
 				float3 V = normalize(_WorldSpaceCameraPos - i.vertexW.xyz);
 				float3 H = normalize(L + V);
+				float3 N = i.normalWorld;
 
 
 
