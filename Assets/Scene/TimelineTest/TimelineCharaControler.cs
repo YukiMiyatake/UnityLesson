@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Playables;
 using UnityStandardAssets.CrossPlatformInput;
 
 namespace UnityLesson.Timeline
@@ -13,9 +14,16 @@ namespace UnityLesson.Timeline
         private Vector3 m_Move;
         private bool m_Jump;                      // the world-relative desired move direction, calculated from the camForward and user input.
 
+        private PlayableDirector playableDirectorAttack;
+        private Animator animatorAttack;
 
         private void Start()
         {
+            var go = GameObject.Find("TimeLine");
+            playableDirectorAttack =  go.GetComponent<PlayableDirector>();
+            animatorAttack = go.GetComponent<Animator>();
+
+
             // get the transform of the main camera
             if (Camera.main != null)
             {
@@ -41,7 +49,6 @@ namespace UnityLesson.Timeline
             }
         }
 
-
         // Fixed update is called in sync with physics
         private void FixedUpdate()
         {
@@ -49,6 +56,14 @@ namespace UnityLesson.Timeline
             float h = CrossPlatformInputManager.GetAxis("Horizontal");
             float v = CrossPlatformInputManager.GetAxis("Vertical");
             bool crouch = Input.GetKey(KeyCode.C);
+
+
+            if (Input.GetKey(KeyCode.V))
+            {
+                playableDirectorAttack.Play();
+            }
+
+
 
             // calculate move direction to pass to character
             if (m_Cam != null)
