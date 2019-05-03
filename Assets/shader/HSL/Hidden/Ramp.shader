@@ -46,23 +46,8 @@ Shader "Hidden/HSL/Ramp" {
 
 			struct v2f
 			{
-				float4 pos : SV_POSITION;
 				float4 vertexW: TEXCOORD0;
 				float2 uv	  : TEXCOORD1;
-				float3 normalWorld : TEXCOORD2;
-				SHADOW_COORDS(3)
-#ifdef _USE_NORMALMAP
-				float3 tangentDir : TEXCOORD4;
-				float3 bitangentDir : TEXCOORD5;
-#endif
-			};
-
-
-			struct v2f_in
-			{
-				UNITY_VPOS_TYPE vpos : VPOS;
-				float4 vertexW: TEXCOORD0;
-				float2 uv     : TEXCOORD1;
 				float3 normalWorld : TEXCOORD2;
 				SHADOW_COORDS(3)
 #if defined(_USE_NORMALMAP) || defined (_USE_MATCAP)
@@ -108,9 +93,9 @@ Shader "Hidden/HSL/Ramp" {
 			uniform float _ClipThreshold;
 #endif
 
-			v2f vert(appdata_full v) {
+			v2f vert(appdata_full v, out float4 pos : SV_POSITION) {
 				v2f o;
-				o.pos = UnityObjectToClipPos(v.vertex);
+				pos = UnityObjectToClipPos(v.vertex);
 				o.vertexW = mul(unity_ObjectToWorld, v.vertex);
 
 				o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
@@ -127,9 +112,9 @@ Shader "Hidden/HSL/Ramp" {
 
 
 #ifdef _USE_NORMALMAP
-			float4 frag(v2f_in i, float facing : VFACE) : SV_Target{
+			float4 frag(v2f i, UNITY_VPOS_TYPE vpos : VPOS, float facing : VFACE) : SV_Target{
 #else
-			float4 frag(v2f_in i) : SV_Target{
+			float4 frag(v2f i, UNITY_VPOS_TYPE vpos : VPOS) : SV_Target{
 #endif
 
 				float4 tex = tex2D(_MainTex, i.uv);
@@ -167,8 +152,9 @@ Shader "Hidden/HSL/Ramp" {
 
 
 				//LightColor
-				float3 lightCol = _LightColor0.rgb * lerp((1 - _ShadowPower), 1.0,  LIGHT_ATTENUATION(i));
 //				float3 lightCol = LIGHT_ATTENUATION(i);
+//				float3 lightCol = _LightColor0.rgb * lerp( LIGHT_ATTENUATION(i) , 1.0, (1 - _ShadowPower));
+				float3 lightCol = _LightColor0.rgb * lerp((1 - _ShadowPower), 1.0, LIGHT_ATTENUATION(i));
 
 				//Ambient
 			//	float3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;
@@ -198,9 +184,9 @@ Shader "Hidden/HSL/Ramp" {
 
 				// Hatching
 #ifdef _USE_HATCHING
-				i.vpos.xy /= _ScreenParams.xy;
-				i.vpos.xy *= float2(_ShadowTexRepeatU, _ShadowTexRepeatV);
-				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
+				vpos.xy /= _ScreenParams.xy;
+				vpos.xy *= float2(_ShadowTexRepeatU, _ShadowTexRepeatV);
+				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
 #else
 				float3 shadowTex = SHADOW_ATTENUATION(i);
 #endif
