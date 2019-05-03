@@ -13,6 +13,11 @@ Shader "HSL/Ramp"
 		[Toggle(_USE_NORMALMAP)] _useNormalMap("UseNormalMap", Float) = 0
 		_NormalMap("NormalMap", 2D) = "bump" {}
 
+
+		[Header(Matcap)]
+		[Toggle(_USE_MATCAP)] _useMatcap("UseMatcap", Float) = 0
+		_MatcapTex("MatcapTexture", 2D) = "white" {}
+
 		[Header(Toon )]
 		[KeywordEnum(None, Normal, Multiply, LinearDodge, Screen)] _BlendMode("Blend Mode", Float) = 0
 		_RampTex ("RampTexture", 2D) = "white" {}

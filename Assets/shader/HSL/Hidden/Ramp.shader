@@ -26,6 +26,7 @@ Shader "Hidden/HSL/Ramp" {
 			#pragma multi_compile _BLENDMODE_NONE _BLENDMODE_NORMAL _BLENDMODE_MULTIPLY _BLENDMODE_LINEARDODGE _BLENDMODE_SCREEN 
 			#pragma multi_compile _ _USE_NORMALMAP
 			#pragma multi_compile _ _USE_CLIP
+			#pragma multi_compile _ _USE_MATCAP
 
 			#pragma multi_compile _ _USE_HATCHING
 			#pragma multi_compile _ _USE_RIM
@@ -64,7 +65,7 @@ Shader "Hidden/HSL/Ramp" {
 				float2 uv     : TEXCOORD1;
 				float3 normalWorld : TEXCOORD2;
 				SHADOW_COORDS(3)
-#ifdef _USE_NORMALMAP
+#if defined(_USE_NORMALMAP) || defined (_USE_MATCAP)
 				float3 tangentDir : TEXCOORD4;
 				float3 bitangentDir : TEXCOORD5;
 #endif
@@ -72,6 +73,10 @@ Shader "Hidden/HSL/Ramp" {
 
 			uniform sampler2D _MainTex; uniform float4 _MainTex_ST;
 			uniform sampler2D _NormalMap; uniform float4 _NormalMap_ST;
+
+#ifdef _USE_MATCAP
+			uniform sampler2D _MatcapTex; uniform float4 _MatcapTex_ST;
+#endif
 
 			uniform sampler2D _RampTex; uniform float4 _RampTex_ST;
 			uniform float _RampV;
@@ -118,16 +123,22 @@ Shader "Hidden/HSL/Ramp" {
 				return o;
 			}
 
-			float4 frag(v2f_in i) : SV_Target{
-				float4 tex = tex2D(_MainTex, i.uv);
-#ifdef _USE_CLIP
-				clip(tex.a - _ClipThreshold);
-#endif
-				float3 L = normalize(_WorldSpaceLightPos0.xyz);
-				float3 V = normalize(_WorldSpaceCameraPos - i.vertexW.xyz);
-				float3 H = normalize(L + V);
 
-#ifdef _USE_NORMALMAP
+
+
+#ifdef _USE_MATCAP
+			float4 frag(v2f_in i, float facing : VFACE) : SV_Target{
+#else
+			float4 frag(v2f_in i) : SV_Target{
+#endif
+
+				float4 tex = tex2D(_MainTex, i.uv);
+
+#if defined(_USE_NORMALMAP) || defined(_USE_MATCAP)
+				float isFrontFace = (facing >= 0 ? 1 : 0);
+				float faceSign = (facing >= 0 ? 1 : -1);
+				i.normalWorld *= faceSign;
+
 				float3x3 tangentTransform = float3x3(i.tangentDir, i.bitangentDir, i.normalWorld);
 				float3 _NormalMap_var = UnpackNormal(tex2D(_NormalMap, TRANSFORM_TEX(i.uv, _NormalMap)));
 				float3 normalLocal = _NormalMap_var.rgb;
@@ -135,6 +146,28 @@ Shader "Hidden/HSL/Ramp" {
 #else
 				float3 N = i.normalWorld;
 #endif
+
+
+
+
+#ifdef _USE_MATCAP
+				float2 node_3332 = (mul(UNITY_MATRIX_V, float4(N, 0)).rg*0.5 + 0.5);
+//				float4 _ShadowMaskTex_var = tex2D(_ShadowMaskTex, TRANSFORM_TEX(i.uv0, _ShadowMaskTex));
+				float4 _MatcapTex_var = tex2D(_MatcapTex, TRANSFORM_TEX(node_3332, _MatcapTex));
+#else
+				float4 _MatcapTex_var = float4(1.0, 1.0, 1.0, 1.0);
+#endif
+
+
+
+#ifdef _USE_CLIP
+				clip(tex.a - _ClipThreshold);
+#endif
+				float3 L = normalize(_WorldSpaceLightPos0.xyz);
+				float3 V = normalize(_WorldSpaceCameraPos - i.vertexW.xyz);
+				float3 H = normalize(L + V);
+
+
 
 				//LightColor
 				float3 lightCol = _LightColor0.rgb * lerp((1 - _ShadowPower), 1.0,  LIGHT_ATTENUATION(i));
@@ -196,7 +229,7 @@ Shader "Hidden/HSL/Ramp" {
 				albedo = tex*(1 - _ToonIntensity) + ramp3 * _ToonIntensity;
 #endif
 
-				return float4(saturate(/* ambient* */ albedo * shadowTex * lightCol +  rimColor + specular), 1.0);
+				return float4(saturate(/* ambient* */ albedo * shadowTex * lightCol *_MatcapTex_var +  rimColor + specular), 1.0);
 			}
 			ENDCG
 
