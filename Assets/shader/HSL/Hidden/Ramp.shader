@@ -46,6 +46,7 @@ Shader "Hidden/HSL/Ramp" {
 
 			struct v2f
 			{
+				 float4 pos : SV_POSITION;
 				float4 vertexW: TEXCOORD0;
 				float2 uv	  : TEXCOORD1;
 				float3 normalWorld : TEXCOORD2;
@@ -93,9 +94,9 @@ Shader "Hidden/HSL/Ramp" {
 			uniform float _ClipThreshold;
 #endif
 
-			v2f vert(appdata_full v, out float4 pos : SV_POSITION) {
+			v2f vert(appdata_full v) {
 				v2f o;
-				pos = UnityObjectToClipPos(v.vertex);
+				o.pos = UnityObjectToClipPos(v.vertex);
 				o.vertexW = mul(unity_ObjectToWorld, v.vertex);
 
 				o.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
@@ -112,9 +113,9 @@ Shader "Hidden/HSL/Ramp" {
 
 
 #ifdef _USE_NORMALMAP
-			float4 frag(v2f i, UNITY_VPOS_TYPE vpos : VPOS, float facing : VFACE) : SV_Target{
+			float4 frag(v2f i, float facing : VFACE) : SV_Target{
 #else
-			float4 frag(v2f i, UNITY_VPOS_TYPE vpos : VPOS) : SV_Target{
+			float4 frag(v2f i) : SV_Target{
 #endif
 
 				float4 tex = tex2D(_MainTex, i.uv);
@@ -184,9 +185,9 @@ Shader "Hidden/HSL/Ramp" {
 
 				// Hatching
 #ifdef _USE_HATCHING
-				vpos.xy /= _ScreenParams.xy;
-				vpos.xy *= float2(_ShadowTexRepeatU, _ShadowTexRepeatV);
-				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, vpos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
+				i.pos.xy /= _ScreenParams.xy;
+				i.pos.xy *= float2(_ShadowTexRepeatU, _ShadowTexRepeatV);
+				float3 shadowTex = lerp(lerp(1 - _ShadowTexPower, 1.0, tex2D(_ShadowTex, i.pos.xy)), 1.0, SHADOW_ATTENUATION(i)* diffuse);
 #else
 				float3 shadowTex = SHADOW_ATTENUATION(i);
 #endif
