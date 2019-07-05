@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using NUnit.Framework;
+//using NUnit.Framework;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -269,7 +269,7 @@ namespace Openworld.Editor
             td.treePrototypes = origTerrain.terrainData.treePrototypes;
             td.detailPrototypes = origTerrain.terrainData.detailPrototypes;
 
-            td.terrainLayers = origTerrain.terrainData.terrainLayers;
+  //          td.terrainLayers = origTerrain.terrainData.terrainLayers;
             // Get percent of original
             float xMinNorm = xMin / origTerrain.terrainData.size.x;
             float xMaxNorm = xMax / origTerrain.terrainData.size.x;
