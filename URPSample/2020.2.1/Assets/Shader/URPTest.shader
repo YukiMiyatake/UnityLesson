@@ -20,12 +20,23 @@ Shader "MyShader/URPTest"
             // make fog work
             #pragma multi_compile_fog
 
-#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+//#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+//#pragma shader_feature _RECEIVE_SHADOWS_OFF
 #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+//#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+//#pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
+//#pragma multi_compile _ _SHADOWS_SOFT
+//#pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
+//#pragma multi_compile _ DIRLIGHTMAP_COMBINED
+//#pragma multi_compile _ LIGHTMAP_ON
 
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
             #include "AutoLight.cginc"
+
+
+
+#pragma multi_compile_fwdbase
 
             struct appdata
             {
@@ -54,12 +65,12 @@ Shader "MyShader/URPTest"
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
                 //LightColor
 //                fixed4 lightCol = (_LightColor0.rgb * LIGHT_ATTENUATION(i), 1);
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv) * SHADOW_ATTENUATION(i);
+                fixed4 col = tex2D(_MainTex, i.uv) *SHADOW_ATTENUATION(i);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
