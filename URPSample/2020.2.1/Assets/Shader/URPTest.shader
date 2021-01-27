@@ -13,19 +13,22 @@ Shader "MyShader/URPTest"
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
+//            Tags { "LightMode" = "ForwardLit" }
 
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             // make fog work
-            #pragma multi_compile_fog
+           // #pragma multi_compile_fog
 
-//#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
 //#pragma shader_feature _RECEIVE_SHADOWS_OFF
+
 #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
 //#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
 //#pragma multi_compile _ _ADDITIONAL_LIGHT_SHADOWS
-//#pragma multi_compile _ _SHADOWS_SOFT
+#pragma multi_compile _ _SHADOWS_SOFT
+
 //#pragma multi_compile _ _MIXED_LIGHTING_SUBTRACTIVE
 //#pragma multi_compile _ DIRLIGHTMAP_COMBINED
 //#pragma multi_compile _ LIGHTMAP_ON
@@ -33,10 +36,13 @@ Shader "MyShader/URPTest"
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
             #include "AutoLight.cginc"
+//            #include "Assets/Shader/MyAutoLight.cginc"
 
 
 
 #pragma multi_compile_fwdbase
+
+
 
             struct appdata
             {
@@ -55,6 +61,10 @@ Shader "MyShader/URPTest"
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
+       
+
+            
+
             v2f vert (appdata v)
             {
                 v2f o;
@@ -70,9 +80,14 @@ Shader "MyShader/URPTest"
                 //LightColor
 //                fixed4 lightCol = (_LightColor0.rgb * LIGHT_ATTENUATION(i), 1);
                 // sample the texture
-                fixed4 col = tex2D(_MainTex, i.uv) *SHADOW_ATTENUATION(i);
+                fixed shadow = SHADOW_ATTENUATION(i);
+//                fixed4 col = tex2D(_MainTex, i.uv) * shadow;
+                fixed4 col = tex2D(_MainTex, i.uv);
+                col.rgb *= shadow;
+//                col.rgb *= clamp(shadow + 0.5, 0.0, 1.0);
+
                 // apply fog
-                UNITY_APPLY_FOG(i.fogCoord, col);
+               // UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
             }
             ENDCG
