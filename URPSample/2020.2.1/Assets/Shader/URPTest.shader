@@ -35,8 +35,8 @@ Shader "MyShader/URPTest"
 
             #include "UnityCG.cginc"
             #include "Lighting.cginc"
-            #include "AutoLight.cginc"
-//            #include "Assets/Shader/MyAutoLight.cginc"
+           // #include "AutoLight.cginc"
+            #include "Assets/Shader/MyAutoLight.cginc"
 
 
 
@@ -72,6 +72,7 @@ Shader "MyShader/URPTest"
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 UNITY_TRANSFER_FOG(o,o.vertex);
                 TRANSFER_SHADOW(o);
+//                o._ShadowCoord = float4(worldPos, 1);
                 return o;
             }
 
