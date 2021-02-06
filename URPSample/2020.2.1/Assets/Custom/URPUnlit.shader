@@ -40,8 +40,14 @@ Shader "MyShader/URPUnlit"
 			#pragma vertex vert
 			#pragma fragment frag
 
+
+			#pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+
 			#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Input.hlsl"
 			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
+
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
 			TEXTURE2D(MainTex);
 			SAMPLER(samplerMainTex);
@@ -57,24 +63,15 @@ Shader "MyShader/URPUnlit"
 			{
 				float4 positionCS : SV_POSITION;
 				float4 texCoord0 : TEXCOORD0;
+				float3 positionWS: TEXCOORD1;
 			};
-
-			
-			float3 TransformObjectToWorld(float3 positionOS)
-			{
-				return mul(unity_ObjectToWorld, float4(positionOS, 1.0)).xyz;
-			}
-
-			float4 TransformWorldToHClip(float3 positionWS)
-			{
-				return mul(unity_MatrixVP, float4(positionWS, 1.0));
-			}
 
 			Varyings vert(Attributes input)
 			{
 				Varyings output = (Varyings)0;
 				output.positionCS = TransformWorldToHClip(TransformObjectToWorld(input.positionOS));
 				output.texCoord0 = input.uv0;
+				output.positionWS = TransformObjectToWorld(input.positionOS);
 				return output;
 			}
 
@@ -82,7 +79,9 @@ Shader "MyShader/URPUnlit"
 			{
 				half4 o = SAMPLE_TEXTURE2D(MainTex, samplerMainTex, input.texCoord0.xy);
 
-				return o;
+				Light l = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
+
+				return o*l.shadowAttenuation;
 			}
 
 			ENDHLSL
