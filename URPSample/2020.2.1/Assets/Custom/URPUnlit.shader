@@ -78,7 +78,6 @@ Shader "MyShader/URPUnlit"
 			half4 frag(Varyings input) : SV_TARGET
 			{
 				half4 o = SAMPLE_TEXTURE2D(MainTex, samplerMainTex, input.texCoord0.xy);
-
 				Light l = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
 
 				return o*l.shadowAttenuation;
