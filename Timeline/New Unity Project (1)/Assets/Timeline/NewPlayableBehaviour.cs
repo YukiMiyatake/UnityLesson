@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Playables;
 
 // A behaviour that is attached to a playable
-//[System.Serializable]
+[System.Serializable]
 public class NewPlayableBehaviour : PlayableBehaviour
 {
     [SerializeField]public float hoge;
@@ -39,14 +39,14 @@ public class NewPlayableBehaviour : PlayableBehaviour
     // Called when the state of the playable is set to Play
     public override void OnBehaviourPlay(Playable playable, FrameData info)
     {
-        //binding_.SetActive(false);
+        binding_.SetActive(false);
         //Debug.Log("OnBehaviourPlay");
     }
 
     // Called when the state of the playable is set to Paused
     public override void OnBehaviourPause(Playable playable, FrameData info)
     {
-        //binding_.SetActive(true);
+        binding_.SetActive(true);
         //Debug.Log("OnBehaviourPause");
     }
 

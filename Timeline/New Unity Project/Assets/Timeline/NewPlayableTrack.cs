@@ -10,19 +10,15 @@ public class NewPlayableTrack : TrackAsset
 {
     protected override Playable CreatePlayable(PlayableGraph graph, GameObject go, TimelineClip clip)
     {
-        //      Playable playable = base.CreatePlayable(graph, go, clip);
-        /*
-        AnimationCurve curve = new AnimationCurve();
-        
-        Keyframe kfA = new Keyframe((float)(clip.duration*0.5), 1);
-        curve.AddKey(kfA);
-        clip.CreateCurves("test");
-        */
-        var playable = ScriptPlayable<NewPlayableBehaviour>.Create(graph);
-        var trackBinding = go.GetComponent<PlayableDirector>().GetGenericBinding(this) as GameObject;
+        Playable playable = base.CreatePlayable(graph, go, clip);
  
-        playable.GetBehaviour().target_ = trackBinding;
-        
+
+        //var trackBinding = go.GetComponent<PlayableDirector>().GetGenericBinding(this) as GameObject;
+        //Debug.Log("Track::" + trackBinding);
+
+        //var p = (ScriptPlayable<NewPlayableBehaviour>)playable;
+        //p.GetBehaviour().binding_ = trackBinding;
+
         return playable;
     }
 }
