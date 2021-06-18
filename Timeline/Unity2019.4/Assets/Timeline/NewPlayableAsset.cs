@@ -16,7 +16,7 @@ public class NewPlayableAsset : PlayableAsset
         var playable = ScriptPlayable<NewPlayableBehaviour>.Create(graph, template_);
 
        
-
+       
 
         return playable;
     }

@@ -8,12 +8,15 @@ using UnityEditor;
 [System.Serializable]
 public class NewPlayableAsset : PlayableAsset
 {
-    public NewPlayableBehaviour template_;
+    public NewPlayableBehaviour template_ = null;
 
     // Factory method that generates a playable based on this asset
     public override Playable CreatePlayable(PlayableGraph graph, GameObject go)
     {
-       // Debug.Log("Asset::CreatePlayable");
+        // Debug.Log("Asset::CreatePlayable");
+        if (template_ is null) {
+            template_ = new NewPlayableBehaviour();
+        }
         var playable = ScriptPlayable<NewPlayableBehaviour>.Create(graph, template_);
        // template_ = playable.GetBehaviour();
 
@@ -48,9 +51,9 @@ public class NewPlayableAsset : PlayableAsset
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            //  var owner = target as NewPlayableAsset;
-            //Debug.Log(owner);
-            //Debug.Log(owner.template_);
+              var owner = target as NewPlayableAsset;
+            Debug.Log(owner);
+            Debug.Log(owner.template_);
 
             //owner.template_.move_ = EditorGUILayout.Slider(owner.template_.move_, 0f, 1f);
 

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
+using UnityEngine.Timeline;
 
 // A behaviour that is attached to a playable
 [System.Serializable]
@@ -10,6 +11,7 @@ public class NewPlayableBehaviour : PlayableBehaviour
     [SerializeField]public float hoge;
 
     public GameObject binding_;
+    [HideInInspector] public TimelineClip clip_;
 
     [SerializeField] public float move_ { set; get; }
 
