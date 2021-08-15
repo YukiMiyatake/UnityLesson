@@ -6,7 +6,7 @@ using UnityEngine.Timeline;
 
 // A behaviour that is attached to a playable
 [System.Serializable]
-public class NewPlayableBehaviour : PlayableBehaviour
+public class NewPlayableBehaviour : PlayableBehaviour, ITimeControl
 {
     [SerializeField]public float hoge;
 
@@ -24,7 +24,7 @@ public class NewPlayableBehaviour : PlayableBehaviour
     // Called when the owning graph stops playing
     public override void OnGraphStop(Playable playable)
     {
-        //Debug.Log("OnGraphStop");
+        Debug.Log("OnGraphStop");
     }
 
 
@@ -34,7 +34,7 @@ public class NewPlayableBehaviour : PlayableBehaviour
     }
     public override void OnPlayableDestroy(Playable playable)
     {
-        //Debug.Log("OnPlayableDestroy");
+        Debug.Log("OnPlayableDestroy");
     }
 
 
@@ -42,19 +42,38 @@ public class NewPlayableBehaviour : PlayableBehaviour
     public override void OnBehaviourPlay(Playable playable, FrameData info)
     {
         binding_.SetActive(false);
-        //Debug.Log("OnBehaviourPlay");
+        Debug.Log("OnBehaviourPlay");
     }
 
     // Called when the state of the playable is set to Paused
     public override void OnBehaviourPause(Playable playable, FrameData info)
     {
         binding_.SetActive(true);
-        //Debug.Log("OnBehaviourPause");
+        Debug.Log("OnBehaviourPause");
     }
 
-    // Called each frame while the state is set to Play
+
+
     public override void PrepareFrame(Playable playable, FrameData info)
     {
         // Debug.Log("PrepareFrame");
+    }
+
+    // 何度も呼ばれる
+    public void SetTime(double time)
+    {
+        // Debug.Log("SetTime");
+    }
+
+    // クリップ開始時に呼ばれる
+    public void OnControlTimeStart()
+    {
+        Debug.Log("OnControlTimeStart");
+    }
+
+    // クリップから抜ける時に呼ばれる
+    public void OnControlTimeStop()
+    {
+        Debug.Log("OnControlTimeEnd");
     }
 }
